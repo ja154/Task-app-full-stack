@@ -9,12 +9,15 @@ This will call `db.create_all()` under the application context and
 create the SQLite file specified by `SQLALCHEMY_DATABASE_URI`.
 """
 from config import app, db
+from models import User, Task
 
 
 def init_db():
+    """Create the database tables."""
+    print("Initializing the database...")
     with app.app_context():
         db.create_all()
-        print("Database tables created at:", app.config.get("SQLALCHEMY_DATABASE_URI"))
+    print("Database has been initialized successfully.")
 
 
 if __name__ == "__main__":

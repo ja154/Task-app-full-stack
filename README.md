@@ -99,6 +99,9 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
+# Initialize the database (run this once)
+python init_db.py
+
 # Run the Flask server
 python main.py
 ```

@@ -316,7 +316,10 @@ def get_task_stats():
 # ============ APP INITIALIZATION ============
 
 if __name__ == "__main__":
+    # Ensure database tables exist before starting the server. Keep this
+    # initialization here so running `python main.py` will create tables
+    # automatically during development.
     with app.app_context():
         db.create_all()
-    
+
     app.run(debug=True, port=5000)
