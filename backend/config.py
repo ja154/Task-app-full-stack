@@ -5,12 +5,23 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 import os
 from datetime import timedelta
+from dotenv import load_dotenv, find_dotenv
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
+# Load environment variables from a .env file.
+# Use find_dotenv() so a `.env` at the project root (or any parent dir) is
+# discovered automatically even when running the server from `backend/`.
+load_dotenv(find_dotenv())
+
 # Database configuration
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///taskmanager.db"
+# Prefer a DATABASE_URL env var (for production). Fall back to a file in the
+# `instance/` folder for local development. Keeping the DB inside `instance/`
+# makes it easy to ignore from source control.
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+	"DATABASE_URL", "sqlite:///instance/taskmanager.db"
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # JWT configuration
