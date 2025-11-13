@@ -3,6 +3,6 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "build": "npm --prefix frontend run build"
+    "build": "npm ci --no-optional --prefix frontend && npm --prefix frontend run build"
   }
 }

@@ -3,6 +3,8 @@ from config import app, db, bcrypt, jwt
 from models import User, Task
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import datetime
+import os
+from flask import make_response
 import re
 
 # Validation helpers
@@ -36,6 +38,15 @@ def user_lookup_callback(_jwt_header, jwt_data):
 
 
 # ============ AUTH ROUTES ============
+
+
+@app.route("/health", methods=["GET"])
+def health_check():
+    """Simple health endpoint used by PaaS and load balancers to verify the
+    process is up. Returns 200 when the Flask app is running.
+    """
+    return make_response(jsonify({"status": "ok"}), 200)
+
 
 @app.route("/register", methods=["POST"])
 def register():
@@ -322,4 +333,11 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
 
-    app.run(debug=True, port=5000)
+    # Bind to 0.0.0.0 and use the PORT environment variable provided by
+    # hosting platforms (Render, Heroku, Railway, etc.). Default to 5000
+    # for local development.
+    host = os.environ.get("HOST", "0.0.0.0")
+    port = int(os.environ.get("PORT", 5000))
+    debug_flag = os.environ.get("FLASK_DEBUG", "false").lower() in ("1", "true", "yes")
+
+    app.run(host=host, port=port, debug=debug_flag)

@@ -6,6 +6,7 @@ from flask_jwt_extended import JWTManager
 import os
 from datetime import timedelta
 from dotenv import load_dotenv, find_dotenv
+import logging
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -14,6 +15,10 @@ CORS(app, supports_credentials=True)
 # Use find_dotenv() so a `.env` at the project root (or any parent dir) is
 # discovered automatically even when running the server from `backend/`.
 load_dotenv(find_dotenv())
+
+# Configure simple logging for clearer startup messages
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("task_manager.backend.config")
 
 # Database configuration
 # Prefer a DATABASE_URL env var (for production). Fall back to a file in the
@@ -65,7 +70,25 @@ app.config["SQLALCHEMY_DATABASE_URI"] = _resolve_sqlite_url(raw_db_url)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # JWT configuration
-app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+# Use an explicit variable so we can warn or fail when the default secret is used.
+_default_jwt_secret = "your-secret-key-change-in-production"
+jwt_secret = os.environ.get("JWT_SECRET_KEY", _default_jwt_secret)
+
+if jwt_secret == _default_jwt_secret:
+	logger.warning(
+		"Using default JWT_SECRET_KEY. This is insecure for production. "
+		"Set the JWT_SECRET_KEY environment variable to a strong secret."
+	)
+	# If a consuming CI or deployment platform wants the app to fail fast when
+	# the default secret is present, set FAIL_ON_DEFAULT_JWT_SECRET=true in
+	# the environment to raise an error during startup.
+	if os.environ.get("FAIL_ON_DEFAULT_JWT_SECRET", "false").lower() in ("1", "true", "yes"):
+		raise RuntimeError(
+			"JWT_SECRET_KEY is set to the insecure default and FAIL_ON_DEFAULT_JWT_SECRET is true. "
+			"Set JWT_SECRET_KEY in the environment before starting the app."
+		)
+
+app.config["JWT_SECRET_KEY"] = jwt_secret
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
 
 # Initialize extensions
