@@ -3,6 +3,6 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "build": "npm ci --no-optional --prefix frontend && npm --prefix frontend run build"
+    "build": "[ -d frontend/dist ] && echo 'Using committed frontend/dist' || (npm ci --no-optional --prefix frontend && npm --prefix frontend run build)"
   }
 }
