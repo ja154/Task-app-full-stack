@@ -18,8 +18,11 @@ const AuthForm = ({ onLogin }) => {
       ? { username, password }
       : { username, email, password };
 
+    // Use Vite env var VITE_API_URL for deployed backend, fallback to localhost for dev
+    const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
+
     try {
-      const response = await fetch(`http://127.0.0.1:5000/${endpoint}`, {
+      const response = await fetch(`${API_BASE.replace(/\/$/, '')}/${endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
