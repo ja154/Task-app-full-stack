@@ -252,18 +252,69 @@ Change port in `vite.config.js` or kill the process
 
 ## 🚀 Production Deployment
 
-### Backend (Flask)
-1. Set strong `JWT_SECRET_KEY` in environment
-2. Use production database (PostgreSQL recommended)
-3. Set `debug=False` in `app.run()`
-4. Use WSGI server (Gunicorn, uWSGI)
-5. Set up HTTPS with SSL certificate
+### Frontend Deployment (Vercel)
 
-### Frontend (React)
-1. Build for production: `npm run build`
-2. Update API URLs to production backend
-3. Deploy to Netlify, Vercel, or static hosting
-4. Configure environment variables
+The frontend is already configured in `vercel.json` for Vercel deployment.
+
+1. **Connect your GitHub repo to Vercel**:
+   - Go to vercel.com → Import Project → Select your GitHub repo
+   - Vercel auto-detects `vercel.json` configuration
+
+2. **Set Backend API URL** (Critical for mobile/external users):
+   - In Vercel Dashboard → Project Settings → Environment Variables
+   - Add: `VITE_API_URL=https://your-backend-url.com` (e.g., `https://task-api-production.herokuapp.com`)
+   - Redeploy the frontend after adding the variable
+
+3. **Frontend will now be live at**: `https://task-app-full-stack.vercel.app` (or your custom domain)
+
+### Backend Deployment
+
+Choose one of the following:
+
+#### Option A: Deploy to Render (Recommended for SQLite-based projects)
+1. Create account at render.com
+2. Create a new Web Service → Connect GitHub repo
+3. Set environment variables:
+   - `JWT_SECRET_KEY=your-secret-key-here`
+   - `DATABASE_URL=sqlite:///instance/taskmanager.db` (default, or switch to PostgreSQL)
+4. Build Command: `cd backend && pip install -r requirements.txt && python init_db.py`
+5. Start Command: `cd backend && python main.py`
+6. Copy the Render URL and use it as `VITE_API_URL` in Vercel
+
+#### Option B: Deploy to Heroku
+1. Create account at heroku.com
+2. Install Heroku CLI and run: `heroku login`
+3. From project root: `heroku create task-api-production`
+4. Add PostgreSQL addon: `heroku addons:create heroku-postgresql:hobby-dev`
+5. Set environment: `heroku config:set JWT_SECRET_KEY=your-secret-key-here`
+6. Create `Procfile` in root:
+   ```
+   web: cd backend && gunicorn config:app
+   ```
+7. Install gunicorn: `pip install gunicorn` (add to `backend/requirements.txt`)
+8. Deploy: `git push heroku main`
+9. Use Heroku URL as `VITE_API_URL` in Vercel
+
+#### Option C: Deploy to Railway or Fly.io
+- Similar process to Render; see their documentation for Flask apps
+- Ensure DATABASE_URL environment variable is set
+
+### Connecting Frontend to Backend
+
+After deploying backend:
+1. Copy your backend deployment URL (e.g., `https://task-api-production.herokuapp.com`)
+2. In Vercel Dashboard → Settings → Environment Variables
+3. Add `VITE_API_URL=<your-backend-url>`
+4. Trigger a redeploy (Vercel → Deployments → Redeploy)
+5. Mobile users can now register/login successfully
+
+### Database Notes
+
+- **SQLite** (current): Works for small projects; file-based, no setup needed. Not ideal for serverless.
+- **PostgreSQL** (recommended for production):
+  - Use Supabase, Railway, or Heroku Postgres
+  - Update `DATABASE_URL` env var to PostgreSQL connection string
+  - No code changes needed (SQLAlchemy handles both)
 
 ## 📝 Future Enhancements
 
